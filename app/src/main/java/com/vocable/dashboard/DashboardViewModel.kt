@@ -17,7 +17,6 @@ class DashboardViewModel(wordsRepository: WordsRepository, userRepository: UserR
     init {
 
         viewModelScope.launch {
-            //     wordsRepository.writeWordsInDb()
             val user = userRepository.getMyDetail()
             user.collect {
                 it?.let {

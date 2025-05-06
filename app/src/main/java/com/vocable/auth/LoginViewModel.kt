@@ -31,7 +31,7 @@ class LoginViewModel(
 
     init {
         viewModelScope.launch {
-            //   wordsRepository.writeWordsInDb()
+             //  wordsRepository.writeWordsInDb()
         }
     }
 
@@ -52,7 +52,6 @@ class LoginViewModel(
                             userDetail.preference.dailyWordQuota,
                             emptyList()
                         )
-//14870869-80ec-416a-98f2-e76d6e9c883d, f41439e7-08f0-4a30-86ce-9f3ac3a03d08, dffffa01-e910-4ecb-b538-0797dee2626d
                         val words =
                             wordsRepository.getWordsOfTheDay(userDetail.preference.dailyWordQuota)
                                 .first()

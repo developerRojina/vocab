@@ -17,7 +17,6 @@ class HomeViewModel(wordsRepository: WordsRepository, userRepository: UserReposi
     init {
 
         viewModelScope.launch {
-            // wordsRepository.writeWordsInDb()
             val user = userRepository.getMyDetail()
             user.collect {
                 it?.let {

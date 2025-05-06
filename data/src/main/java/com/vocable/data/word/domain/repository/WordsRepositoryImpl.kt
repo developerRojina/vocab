@@ -105,7 +105,7 @@ class WordsRepositoryImpl(
                     var response = wordsApi.getWordsDetail(words[index])
                     val ids = mapOf<String, String>(
                         "id" to UUID.randomUUID().toString(),
-                        "index" to "index${index + 999}",
+                        "index" to "index${index + 1035}",
                         "word" to word
                     )
                     val combinedResponse = ids + response
@@ -123,10 +123,7 @@ class WordsRepositoryImpl(
 
     fun getWords(): List<String> {
         return listOf(
-            "morbid",
-            "allegory",
-
-            )
+            "hypochondriac",    )
 
 
     }
