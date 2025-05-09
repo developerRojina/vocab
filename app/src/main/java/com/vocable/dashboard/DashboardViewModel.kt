@@ -24,7 +24,6 @@ class DashboardViewModel(wordsRepository: WordsRepository, userRepository: UserR
                     _myWords.value =
                         wordIds.mapNotNull { wordsRepository.getWordDetail(it) }
                 }
-
             }
         }
     }

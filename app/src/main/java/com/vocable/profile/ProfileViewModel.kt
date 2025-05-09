@@ -55,7 +55,6 @@ class ProfileViewModel(
 
                     _state.value = _state.value.copy(wordsInfo = wordsInfo, countsInfo = items)
 
-
                 }
             }
         }
