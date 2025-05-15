@@ -22,8 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.vocable.data.word.domain.model.Meaning
 import timber.log.Timber
@@ -39,10 +38,12 @@ import kotlin.math.abs
 
 
 @Composable
-fun FlashCards(items: List<Any>) {
+fun FlashCards(items: List<Any>, wordId: String) {
     Timber.d("the items size is ${items.size}")
     val meaningCount = items.size
-    val colors = remember(meaningCount) { items.map { randomColor() } }
+    val colors = remember(items.map { it.hashCode() }) {
+        items.map { randomColor() }
+    }
     Column(horizontalAlignment = Alignment.Start) {
         Box(
             modifier = Modifier
@@ -50,100 +51,50 @@ fun FlashCards(items: List<Any>) {
                 .height(350.dp)
         ) {
 
-            var topCardIndex by remember(meaningCount) { mutableIntStateOf(-1) }
+            var topCardIndex by rememberSaveable(wordId) { mutableIntStateOf(-1) }
 
-            val xOffsets = remember(meaningCount) {
-                mutableStateListOf<Dp>().apply {
-                    repeat(meaningCount) { index ->
-                        add(24.dp * index)
-                    }
-                }
-            }
-            val yOffsets = remember(meaningCount) {
-                mutableStateListOf<Dp>().apply {
-                    repeat(meaningCount) { index ->
-                        add(12.dp * index)
-                    }
-                }
-            }
-            val dragOffsets = remember(meaningCount) {
-                mutableStateListOf<Float>().apply {
-                    repeat(meaningCount) { index ->
-                        add(0f)
-                    }
-                }
+
+            val cardState = remember(wordId, meaningCount) {
+                CardOffsetState(meaningCount)
             }
 
-            val blockSize = 5
-
-            LaunchedEffect(topCardIndex) {
-                Timber.d("the selected card is $topCardIndex")
+            LaunchedEffect(wordId, topCardIndex) {
+                Timber.d("the top card index is $topCardIndex")
                 if (topCardIndex >= 0) {
-                    var remainder = (topCardIndex % blockSize)
-                    if (remainder == 0 && topCardIndex > 0) {
-                        val division = (topCardIndex / blockSize) - 1
-                        var blockIndex = division * 5
-
-                        for (k in blockIndex until topCardIndex + 1) {
-                            yOffsets[k] = 0.dp
-                            xOffsets[k] = 16.dp
-                            dragOffsets[k] = -90f + ((division + 1) * 5)
-                        }
-                    }
-
-                    if (topCardIndex < meaningCount - 1) {
-                        val division = (topCardIndex / blockSize)
-                        dragOffsets[topCardIndex] =
-                            -90f + (minOf(topCardIndex, remainder + division) * blockSize)
-                        xOffsets[topCardIndex + 1] = 16.dp
-                        yOffsets[topCardIndex + 1] = 12.dp
-
-                        for (j in (topCardIndex + 2) until meaningCount) {
-                            xOffsets[j] = 24.dp * (j - (topCardIndex))
-                            yOffsets[j] = 12.dp * (j - (topCardIndex))
-
-                        }
-                    }
+                    cardState.updateOffsetsForSelection(topCardIndex, meaningCount)
                 }
             }
+
 
             items.indices.reversed().forEach { visualIndex ->
 
                 val item = items[visualIndex]
                 val color = colors[visualIndex]
-                val dragOffset = dragOffsets[visualIndex]
-                val xOffset = xOffsets[visualIndex]
-                val yOffset = yOffsets[visualIndex]
-                val (type, body) = when (val data = item) {
-                    is String -> null to data
-                    is Meaning -> {
-                        data.partOfSpeech to data.meaning
-                    }
-
-                    else -> null to ""
-                }
+                val (type, body) = extractCardContent(item)
 
                 FlashCard(
                     FlashCardInfo(
                         data = body,
                         type = type,
                         color = color,
-                        dragOffset = dragOffset,
-                        xOffset = xOffset,
-                        yOffset = yOffset
+                        dragOffset = cardState.dragOffsets[visualIndex],
+                        xOffset = cardState.xOffsets[visualIndex],
+                        yOffset = cardState.yOffsets[visualIndex],
                     ),
                     visualIndex,
 
                     onSwiped = { dataIndex ->
+                        //  if (topCardIndex== dataIndex-1) {
+                        if (dataIndex == topCardIndex) {
+                            //todo something here
+                        }
                         topCardIndex = dataIndex
+                        // }
+
                     },
                     onTap = { dataIndex ->
                         if (dataIndex <= topCardIndex) {
-                            for (j in dataIndex until meaningCount) {
-                                dragOffsets[j] = 0f
-                                xOffsets[j] = 24.dp * (j - dataIndex)
-                                yOffsets[j] = 12.dp * (j - dataIndex)
-                            }
+                            cardState.resetOffsets(dataIndex, meaningCount)
                         }
                     },
                 )
@@ -191,7 +142,7 @@ fun FlashCard(
                 }
             ),
         elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 48.dp, bottomEnd = 48.dp, topEnd = 32.dp),
         colors = CardDefaults.cardColors(containerColor = info.color)
     ) {
         Box(
@@ -200,17 +151,19 @@ fun FlashCard(
                 .fillMaxWidth()
         ) {
 
-            Column(Modifier.padding(28.dp)) {
-                info.type?.let { Text(text = it) }
+            Column(Modifier.padding(28.dp).align(Alignment.TopStart)) {
+                info.type?.let { Text(text = it,textAlign = TextAlign.End,) }
                 Text(
                     text = info.data,
-                    textAlign = TextAlign.Left,
-                    style = MaterialTheme.typography.bodyLarge
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.bodyMedium
                 )
+
             }
 
             Text(
                 text = dataIndex.toString(),
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
@@ -219,3 +172,10 @@ fun FlashCard(
     }
 }
 
+private fun extractCardContent(item: Any): Pair<String?, String> {
+    return when (item) {
+        is String -> null to item
+        is Meaning -> item.partOfSpeech to item.meaning
+        else -> null to ""
+    }
+}

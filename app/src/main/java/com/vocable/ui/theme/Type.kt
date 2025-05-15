@@ -19,18 +19,27 @@ val customFontFamily = try {
     e.printStackTrace()
     FontFamily.Default
 }
+
+val technoFont = try {
+    FontFamily(
+        Font(R.font.audiowide, FontWeight.Medium),
+    )
+} catch (e: Exception) {
+    e.printStackTrace()
+    FontFamily.Default
+}
 val Typography = Typography(
+
     titleLarge = TextStyle(
-        fontFamily = customFontFamily,
+        fontFamily = technoFont,
         fontWeight = FontWeight.Medium,
-        fontSize = 52.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        fontSize = 42.sp,
+        letterSpacing = 0.5.sp
     ),
 
     bodyLarge = TextStyle(
-        fontFamily = customFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = technoFont,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
@@ -38,16 +47,16 @@ val Typography = Typography(
 
     bodyMedium = TextStyle(
         fontFamily = customFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
 
     labelSmall = TextStyle(
         fontFamily = customFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
