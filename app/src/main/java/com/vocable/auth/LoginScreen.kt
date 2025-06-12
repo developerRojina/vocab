@@ -1,9 +1,9 @@
 package com.vocable.auth
 
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -32,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -96,55 +100,71 @@ fun LoginScreen(navigateToDashboard: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .fillMaxWidth(.7f)
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.8f)
                 ) {
-                    Card(
+
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo),
+                        contentDescription = "My drawable image",
                         modifier = Modifier
-                            .fillMaxHeight(.8f)
-                            .align(Alignment.TopStart)
-                            .padding(start = 68.dp)
-                            .width(8.dp),
-                        shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp),
-                        colors = CardDefaults.cardColors(containerColor = TealPrimary)
-                    ) { }
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 16.dp, vertical = 48.dp)
 
+                    )
+                    /* Card(
+                         modifier = Modifier
+                             .fillMaxHeight(.8f)
+                             .align(Alignment.TopStart)
+                             .padding(start = 68.dp)
+                             .width(8.dp),
+                         shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp),
+                         colors = CardDefaults.cardColors(containerColor = TealPrimary)
+                     ) { }
+ */
 
-                    val items = "VOCABLE".toCharArray().toList()
-                    LazyColumn(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(vertical = 48.dp)
-                    ) {
-                        items(items.size) { index ->
-                            val item = items[index]
+                    /* val items = "VOCABLE".toCharArray().toList()
+                     LazyRow (
+                         modifier = Modifier
+                             .align(Alignment.BottomEnd)
+                             .padding(vertical = 48.dp)
+                     ) {
+                         items(items.size) { index ->
+                             val item = items[index]
 
-                            Text(
-                                text = item.toString(),
-                                modifier = Modifier.padding(start = 24.dp),
-                                style = MaterialTheme.typography.titleLarge
-                            )
+                             Text(
+                                 text = item.toString(),
+                                 modifier = Modifier.padding(start = 24.dp),
+                                 style = MaterialTheme.typography.titleLarge
+                             )
 
-                        }
-                    }
-
+                         }
+                     }
+ */
 
                     Button(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
+                            .padding(horizontal = 24.dp)
                             .fillMaxWidth(),
 
-                        border = BorderStroke(2.dp, TealPrimary),
 
                         onClick = {
                             viewmodel.login(authProvider)
                         }) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google),
-                            contentDescription = "Login Icon",
-                            modifier = Modifier.size(24.dp) // adjust as needed
-                        )
-                        Spacer(modifier = Modifier.size(8.dp))
-                        Text("Login/Register", style = MaterialTheme.typography.bodyMedium)
+                        if (loginState is LoginUiState.Loading) {
+                            CircularProgressIndicator(color = Color.White)
+                        } else {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_google),
+                                contentDescription = "Login Icon",
+                                modifier = Modifier.size(24.dp) // adjust as needed
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Login/Register", style = MaterialTheme.typography.bodyMedium)
+
+                        }
+
                     }
 
 
@@ -194,27 +214,27 @@ fun LoginSingleFlashCard(modifier: Modifier) {
 @Composable
 fun LoginFlashCard(size: Int, modifier: Modifier) {
     val items = (0 until size).toList()
-    val colors = items.map { randomColor() }
+    val isDarkTheme = isSystemInDarkTheme()
+    val colors = items.map { randomColor(isDarkTheme) }
     Timber.d("the items size is ${items.size}")
     Box(modifier = modifier) {
         items.reversed().forEachIndexed { reversedIndex, _ ->
             val index = size - reversedIndex - 1
             val color = colors[index].copy(alpha = 1f) // ensure no transparency
-            val scaleFactor = 1f + (index * 0.1f)
+            1f + (index * 0.1f)
             val visualIndex = index
             Timber.d("the color is $color")
             val xOffset = 24.dp * visualIndex
-            val yOffset =
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
 
-                        .offset(x = xOffset, y = xOffset)
+                    .offset(x = xOffset, y = xOffset)
 
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(color)
-                    //.zIndex(-index.toFloat())
-                ) {}
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(color)
+                //.zIndex(-index.toFloat())
+            ) {}
         }
     }
 

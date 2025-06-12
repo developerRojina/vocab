@@ -1,36 +1,49 @@
 package com.vocable
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.notification.Constants.EXTRA_NOTIFICATION_TYPE
-import com.notification.domain.model.NotificationType
 import com.vocable.auth.LoginScreen
 import com.vocable.dashboard.DashboardScreen
+import com.vocable.notification.Constants.EXTRA_NOTIFICATION_TYPE
+import com.vocable.notification.domain.model.NotificationType
 import com.vocable.ui.theme.VocableTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 
 class MainActivity : ComponentActivity() {
-    //  val receiver: LocalNotificationReceiver by inject()
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (!isGranted) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val settingsIntent: Intent =
+                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+                startActivity(settingsIntent)
+            }
+
+        }
+    }
 
     val viewmodel: MainViewModel by viewModel()
 
@@ -38,6 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         getPendingIntents()
+        requestNotificationPermission()
 
         Timber.d("inside oncreate ${intent}")
 
@@ -75,12 +89,29 @@ class MainActivity : ComponentActivity() {
             val type =
                 intent.getStringExtra(EXTRA_NOTIFICATION_TYPE)?.let { NotificationType.valueOf(it) }
             if (type == NotificationType.NEW_WORDS) {
-                viewmodel.updateWords()
+              //  viewmodel.updateWords()
+            }
+        }
+    }
+
+
+    private fun requestNotificationPermission() {
+        if (!isPermissionGranted(this)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
 }
 
+fun isPermissionGranted(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else true
+}
 
 
 @Composable

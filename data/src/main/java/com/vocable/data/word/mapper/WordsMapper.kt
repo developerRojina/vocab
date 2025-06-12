@@ -48,7 +48,7 @@ fun Map<String, Any>.toWord(): WordResponse {
         etymologicallyRelatedWords = (this["etymologically-related-words"] as? List<*>)?.mapNotNull { it as? String }
             ?: emptyList(),
 
-        index = requireNotNull(this["index"] as? String) { "index cannot be null or empty" },
+        index = this["index"] as? String ?: ""
     )
 }
 
@@ -57,25 +57,51 @@ fun WordResponse.toWordEntity(): WordEntity {
     return WordEntity(
         id = id,
         word = word,
-        meaning = meaning.map {
-            Meaning(
-                it.definition.replace(Regex("<[^>]*>"), ""),
-                it.partOfSpeech
-            )
-        },
+        meaning = meaning
+            .map {
+                val cleanDefinition = it.definition.replace(Regex("<[^>]*>"), "")
+                Meaning(cleanDefinition, it.partOfSpeech)
+            }
+            .filter { it.meaning.isNotBlank() }
+            .take(20),
         audios = audios?.map { Audio(it.audioUrl, it.duration) } ?: emptyList(),
-        antonyms = synonyms ?: emptyList(),
-        synonyms = antonyms ?: emptyList(),
-        sentences = sentences?.map { it.replace(Regex("<[^>]*>"), "") } ?: emptyList(),
-        forms = forms ?: emptyList(),
+        antonyms = synonyms?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        synonyms = antonyms?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        sentences = sentences?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        forms = forms?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
         etymologicallyRelatedWords = etymologicallyRelatedWords ?: emptyList(),
-        hypernyms = hypernyms ?: emptyList(),
-        rhymes = rhymes ?: emptyList(),
-        contexts = contexts ?: emptyList(),
-        equivalents = equivalents ?: emptyList(),
+        hypernyms = hypernyms?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        rhymes = rhymes?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        contexts = contexts?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
+        equivalents = equivalents?.map {
+            it.replace(Regex("<[^>]*>"), "")
+        }?.filter { it.isNotBlank() }
+            ?.take(10) ?: emptyList(),
         createdAt = TimeAndDateUtils.getCurrentTimeStampEpocMillis(),
         updatedAt = TimeAndDateUtils.getCurrentTimeStampEpocMillis(),
-        wordStatus = WordStatus.Available
+        wordStatus = WordStatus.Available,
+        index = index
     )
 }
 
@@ -94,9 +120,12 @@ fun WordEntity.toWord(): Word {
         rhymes = rhymes,
         contexts = contexts,
         equivalents = equivalents,
-        audio = audios
+        audio = audios,
+        index = index
     )
 }
+
+
 
 
 

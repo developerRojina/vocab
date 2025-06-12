@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 class CardOffsetState(meaningCount: Int) {
+
     val xOffsets = mutableStateListOf<Dp>().apply {
         repeat(meaningCount) { index -> add(24.dp * index) }
     }

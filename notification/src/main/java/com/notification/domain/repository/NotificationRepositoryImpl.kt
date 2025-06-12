@@ -29,18 +29,13 @@ class NotificationRepositoryImpl(
     }
 
     override fun scheduleNotifications(items: List<Long>, type: NotificationType) {
-        items.map {
-            var time = it
-            if (TimeAndDateUtils.hasTimePassed(it)) {
-                time = TimeAndDateUtils.addDayToTimestamp(it)
+        print("Scheduling ${items.size} notifications")
+        items.forEachIndexed { index, time ->
+            var time = items[index]
+            if (TimeAndDateUtils.hasTimePassed(time)) {
+                time = TimeAndDateUtils.addDayToTimestamp(time)
             }
-            notificationScheduler.schedule(
-                NotificationItem(
-                    id = it.hashCode(),
-                    time = time,
-                    notificationType = type,
-                )
-            )
+            scheduleNotification(time, type)
         }
     }
 

@@ -21,7 +21,6 @@ interface WordsDao {
     @Query("SELECT * FROM words WHERE id = :id")
     suspend fun getMyWordsById(id: String): WordEntity?
 
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveWords(words: List<WordEntity>)
 

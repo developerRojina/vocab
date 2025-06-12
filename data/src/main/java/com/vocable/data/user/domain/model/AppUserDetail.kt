@@ -15,7 +15,7 @@ data class AppUserDetail(
 
 
 data class VocabStats(
-    val learnedWordsIndex: List<Int>,
+    val learnedWordsIndex: List<String>,
     val learnedWords: List<String>,
     val quizzedWords: List<String>,
     val currentWords: List<String>,

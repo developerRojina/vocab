@@ -25,62 +25,60 @@ class HomeViewModel(wordsRepository: WordsRepository, userRepository: UserReposi
                     val wordIds = it.vocabStats.currentWords
                     val words = wordIds.filter { it.isNotEmpty() }
                         .mapNotNull { wordsRepository.getWordDetail(it) }
+                        .map { word ->
+                            val flashCardState = wordFlashCardStates.getOrPut(word.id) {
+                                WordFlashCardState(getAvailableFlashCardTypes(word))
+                            }
+
+                            val selectedType = flashCardState.selectedFlashCardType
+                            val items = getFlashCardItems(word, selectedType)
+
+                            PageData(
+                                word = word,
+                                availableFlashCars = flashCardState.availableTypes,
+                                flashCardItems = items,
+                                flashCardTypeWithCardIndex = Pair(
+                                    selectedType,
+                                    flashCardState.selectedCardIndex
+                                )
+                            )
+                        }
+
                     _state.value = _state.value.copy(
-                        words = words,
+                        pages = words,
                         currentPage = 0,
                         detail = it,
                     )
 
-                    // Initialize with first word if available
-                    if (words.isNotEmpty()) {
-                        updatePageData(0)
-                    }
+                    /*  // Initialize with first word if available
+                      if (words.isNotEmpty()) {
+                          updatePageData(0)
+                      }*/
                 }
             }
         }
     }
 
-    fun updatePageData(page: Int) {
-        val currentWord = state.value.words[page]
-        val wordId = currentWord.id // Assuming Word has an ID
 
-        // Get or create word-specific flash card state
-        val flashCardState = wordFlashCardStates.getOrPut(wordId) {
-            WordFlashCardState(getAvailableFlashCardTypes(currentWord))
-        }
-
-        // Get items based on current selection
-        val selectedType = flashCardState.selectedFlashCardType
-        val items = getFlashCardItems(currentWord, selectedType)
-
-        _state.value = _state.value.copy(
-            currentPage = page,
-            selectedPageData = SelectedPageData(
-                word = currentWord,
-                availableFlashCars = flashCardState.availableTypes,
-                flashCardItems = items,
-                flashCardTypeWithCardIndex = Pair(selectedType, flashCardState.selectedCardIndex)
-            ),
-        )
-    }
-
-    fun selectFlashCardType(type: FlashCardType) {
-        val currentWord = state.value.selectedPageData?.word ?: return
-        val wordId = currentWord.id
+    fun selectFlashCardType(pageData: PageData, type: FlashCardType, activePage: Int) {
 
         // Update the selection for this word
-        wordFlashCardStates[wordId]?.let { wordState ->
+        wordFlashCardStates[pageData.word.id]?.let { wordState ->
             wordState.selectedFlashCardType = type
             wordState.selectedCardIndex = 0 // Reset card index when type changes
 
             // Get new items based on selection
-            val items = getFlashCardItems(currentWord, type)
+            val items = getFlashCardItems(pageData.word, type)
 
-            _state.value = _state.value.copy(
-                selectedPageData = state.value.selectedPageData?.copy(
-                    flashCardTypeWithCardIndex = Pair(type, 0),
+            val pages = state.value.pages.toMutableList().apply {
+                this[activePage] = this[activePage].copy(
+                    flashCardTypeWithCardIndex = Pair(type, activePage),
                     flashCardItems = items
                 )
+            }
+
+            _state.value = _state.value.copy(
+                pages = pages
             )
         }
     }

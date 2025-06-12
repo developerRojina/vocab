@@ -2,6 +2,7 @@ package com.vocable.data.word.domain.model
 
 data class Word(
     val id: String,
+    val index: String,
     val word: String,
     val status: WordStatus,
     val meaning: List<Meaning>,

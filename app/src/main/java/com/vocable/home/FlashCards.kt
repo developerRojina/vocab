@@ -6,8 +6,12 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,12 +20,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -41,26 +47,27 @@ import kotlin.math.abs
 fun FlashCards(items: List<Any>, wordId: String) {
     Timber.d("the items size is ${items.size}")
     val meaningCount = items.size
+    val isDarkTheme = isSystemInDarkTheme()
     val colors = remember(items.map { it.hashCode() }) {
-        items.map { randomColor() }
+        items.map { randomColor(isDarkTheme) }
     }
     Column(horizontalAlignment = Alignment.Start) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(350.dp)
+                .fillMaxWidth(.8f)
+                .fillMaxHeight(.7f)
         ) {
 
             var topCardIndex by rememberSaveable(wordId) { mutableIntStateOf(-1) }
-
+            var canSwipe by rememberSaveable(wordId) { mutableStateOf(true) }
 
             val cardState = remember(wordId, meaningCount) {
                 CardOffsetState(meaningCount)
             }
 
-            LaunchedEffect(wordId, topCardIndex) {
+            LaunchedEffect(wordId, topCardIndex, canSwipe) {
                 Timber.d("the top card index is $topCardIndex")
-                if (topCardIndex >= 0) {
+                if (topCardIndex >= 0 && canSwipe) {
                     cardState.updateOffsetsForSelection(topCardIndex, meaningCount)
                 }
             }
@@ -84,17 +91,19 @@ fun FlashCards(items: List<Any>, wordId: String) {
                     visualIndex,
 
                     onSwiped = { dataIndex ->
-                        //  if (topCardIndex== dataIndex-1) {
-                        if (dataIndex == topCardIndex) {
-                            //todo something here
+                        Timber.d("the data index is $dataIndex")
+                        Timber.d("the topCard index is $topCardIndex")
+                        if (topCardIndex + 1 == dataIndex) {
+                            topCardIndex = dataIndex
                         }
-                        topCardIndex = dataIndex
-                        // }
 
                     },
                     onTap = { dataIndex ->
                         if (dataIndex <= topCardIndex) {
                             cardState.resetOffsets(dataIndex, meaningCount)
+                            topCardIndex = dataIndex - 1
+                        } else if (topCardIndex + 1 == dataIndex) {
+                            topCardIndex = dataIndex
                         }
                     },
                 )
@@ -118,6 +127,7 @@ fun FlashCard(
         label = "rotationAnim"
     )
 
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -135,7 +145,6 @@ fun FlashCard(
             .draggable(
                 orientation = Orientation.Horizontal,
                 state = rememberDraggableState { delta ->
-                    Timber.i("inside delta is $delta")
                     if (delta < 0) {
                         onSwiped(dataIndex)
                     }
@@ -151,23 +160,44 @@ fun FlashCard(
                 .fillMaxWidth()
         ) {
 
-            Column(Modifier.padding(28.dp).align(Alignment.TopStart)) {
-                info.type?.let { Text(text = it,textAlign = TextAlign.End,) }
+            Column(
+                Modifier.align(Alignment.TopStart)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 34.dp, end = 8.dp, top = 16.dp)
+                        .align(Alignment.End)
+                ) {
+                    Text(text = info.type ?: "")
+                    Text(
+                        text = (dataIndex + 1).toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 24.dp)
+
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider()
                 Text(
                     text = info.data,
-                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 24.dp * (dataIndex % 6 + 1),
+                            end = 34.dp,
+                            top = 18.dp,
+                            bottom = 24.dp
+                        )
+                        .align(Alignment.End),
+                    textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.bodyMedium
                 )
 
             }
 
-            Text(
-                text = dataIndex.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-            )
+
         }
     }
 }

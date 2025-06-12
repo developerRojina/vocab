@@ -2,8 +2,6 @@ package com.vocable.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.notification.domain.model.NotificationType
-import com.notification.domain.repository.NotificationRepository
 import com.vocable.data.auth.domain.repository.AuthRepository
 import com.vocable.data.auth.source.remote.AuthProvider
 import com.vocable.data.result.onSuccess
@@ -11,7 +9,10 @@ import com.vocable.data.user.domain.model.AppUserDetail
 import com.vocable.data.user.domain.model.UserPreference
 import com.vocable.data.user.domain.repository.UserRepository
 import com.vocable.data.user.mapper.toDefaultUserDetail
+import com.vocable.data.word.domain.model.WordStatus
 import com.vocable.data.word.domain.repository.WordsRepository
+import com.vocable.notification.domain.model.NotificationType
+import com.vocable.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -38,6 +39,7 @@ class LoginViewModel(
     fun login(authProvider: AuthProvider) {
         if (loginState.value == LoginUiState.LoggedIn) return
         viewModelScope.launch {
+            _loginState.value = LoginUiState.Loading
             val appUser = authRepository.login(authProvider)
             appUser?.let { user ->
                 val userDetail: AppUserDetail? = if (user.isNewUser == true) {
@@ -45,13 +47,19 @@ class LoginViewModel(
                 } else {
                     userRepository.getUserDetail(user.id)
                 }
-
                 userDetail?.let { detail ->
-                    if (detail.vocabStats.currentWords.isEmpty()) {
-                        wordsRepository.downloadWords(
-                            userDetail.preference.dailyWordQuota,
-                            emptyList()
+                    if (userDetail.vocabStats.learnedWords.isNotEmpty())
+                        wordsRepository.downloadExistingWords(
+                            WordStatus.Learned,
+                            detail.vocabStats.learnedWords
                         )
+
+                    wordsRepository.downloadWords(
+                        userDetail.preference.dailyWordQuota,
+                        userDetail.vocabStats.learnedWordsIndex
+                    )
+
+                    if (detail.vocabStats.currentWords.isEmpty()) {
                         val words =
                             wordsRepository.getWordsOfTheDay(userDetail.preference.dailyWordQuota)
                                 .first()
@@ -62,21 +70,20 @@ class LoginViewModel(
                             userRepository.addUserDetail(
                                 detail.copy(vocabStats = detail.vocabStats.copy(currentWords = words))
                             )
-                            scheduleAllNotifications(preference = userDetail.preference)
                             successfulLogin(words)
+                            scheduleAllNotifications(preference = userDetail.preference)
                         }
                     } else {
-                        wordsRepository.downloadWords(
-                            userDetail.preference.dailyWordQuota,
-                            userDetail.vocabStats.currentWords
+                        wordsRepository.downloadExistingWords(
+                            WordStatus.Assigned,
+                            detail.vocabStats.currentWords
                         )
 
                         userRepository.saveUserDetail(userDetail)
                             .onSuccess {
-                                scheduleAllNotifications(preference = userDetail.preference)
                                 successfulLogin(userDetail.vocabStats.currentWords)
+                                scheduleAllNotifications(preference = userDetail.preference)
                             }
-
                     }
                 }
             }
@@ -86,9 +93,7 @@ class LoginViewModel(
     suspend fun successfulLogin(words: List<String>) {
         Timber.d("inside successful logins $words")
         wordsRepository.updateWordStatusToAssigned(words)
-
         _loginState.value = LoginUiState.LoggedIn
-
     }
 
     private fun scheduleAllNotifications(preference: UserPreference) {

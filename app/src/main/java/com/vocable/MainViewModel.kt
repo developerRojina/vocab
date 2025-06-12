@@ -6,6 +6,8 @@ import com.vocable.data.auth.domain.repository.AuthRepository
 import com.vocable.data.user.domain.model.AppUser
 import com.vocable.data.user.domain.repository.UserRepository
 import com.vocable.data.word.domain.repository.WordsRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -24,23 +26,5 @@ class MainViewModel(
         _currentUser.value = authRepository.getCurrentUser
     }
 
-    fun updateWords() {
-        viewModelScope.launch {
-            val userDetail = userRepository.getMyDetail().first()
-            userDetail?.let {
-                val quota = userDetail.preference.dailyWordQuota
-                val existingWords = userDetail.vocabStats.currentWords
 
-                wordsRepository.updateWordStatusToLearned(existingWords)
-
-                val words = wordsRepository.getWordsOfTheDay(quota).first()
-
-                wordsRepository.updateWordStatusToAssigned(words)
-                userRepository.updateLearnedWords(userDetail.vocabStats.currentWords)
-
-                userRepository.updateCurrentWords(words)
-            }
-
-        }
-    }
 }

@@ -58,7 +58,7 @@ fun Map<String, Any?>.toUserDetail() = AppUserDetail(
         currentWords = this[KEY_USER_ACTIVE_WORDS] as? List<String> ?: emptyList(),
         learnedWords = this[KEY_USER_LEARNED_WORDS] as? List<String> ?: emptyList(),
         quizzedWords = this[KEY_USER_QUIZZED_WORDS] as? List<String> ?: emptyList(),
-        learnedWordsIndex = this[KEY_USER_LEARNED_WORDS_INDEXES] as? List<Int> ?: emptyList(),
+        learnedWordsIndex = this[KEY_USER_LEARNED_WORDS_INDEXES] as? List<String> ?: emptyList(),
     ),
     preference = UserPreference(
         selectedTheme = SelectedTheme.valueOf(

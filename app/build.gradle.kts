@@ -15,15 +15,16 @@ android {
         applicationId = "com.vocable"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources=true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -45,9 +46,7 @@ android {
 dependencies {
 
     implementation(project(":data"))
-    implementation(project(":notification"))
     implementation(project(":utils"))
-    implementation(project(":core"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -61,7 +60,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(libs.accompanist.pager)
-
+    implementation(libs.slf4j.android)
 
     // Koin Android features
     implementation(libs.koin.android)

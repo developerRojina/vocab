@@ -10,6 +10,7 @@ data class WordEntity(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
     val word: String,
+    val index: String,
     val meaning: List<Meaning>,
     val audios: List<Audio>,
     val sentences: List<String>,

@@ -10,6 +10,7 @@ import com.utils.UserKeyUtils.KEY_SETTINGS_QUIZ_NOTIFICATION_TIME
 import com.utils.UserKeyUtils.KEY_SETTINGS_WORDS_REMINDER_NOTIFICATION_TIME
 import com.utils.UserKeyUtils.KEY_USER_ACTIVE_WORDS
 import com.utils.UserKeyUtils.KEY_USER_LEARNED_WORDS
+import com.utils.UserKeyUtils.KEY_USER_LEARNED_WORDS_INDEXES
 import com.utils.UserKeyUtils.KEY_USER_LOGGED_IN_TIME
 import com.utils.UserKeyUtils.KEY_USER_QUIZZED_WORDS
 import com.vocable.data.FirestoreCollections
@@ -72,11 +73,16 @@ class FirebaseUserSource(private val store: FirebaseFirestore) {
 
     suspend fun updateLearnedWords(
         userId: String,
-        words: List<String>
+        words: List<String>,
+        indexes: List<String>
     ): AppResult<Unit> = safeCall {
         val userRef = store.collection(FirestoreCollections.users)
             .document(userId)
-        userRef.update(KEY_USER_LEARNED_WORDS, FieldValue.arrayUnion(*words.toTypedArray())).await()
+        val updates = mapOf(
+            KEY_USER_LEARNED_WORDS to FieldValue.arrayUnion(*words.toTypedArray()),
+            KEY_USER_LEARNED_WORDS_INDEXES to FieldValue.arrayUnion(*indexes.toTypedArray())
+        )
+        userRef.update(updates).await()
     }
 
     suspend fun updateNewWordsNotificationTime(

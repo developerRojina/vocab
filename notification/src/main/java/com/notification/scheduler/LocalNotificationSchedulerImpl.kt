@@ -29,7 +29,7 @@ class LocalNotificationSchedulerImpl(val context: Context) : LocalNotificationSc
             time,
             PendingIntent.getBroadcast(
                 context,
-                time.hashCode(),
+                notificationItem.id,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )

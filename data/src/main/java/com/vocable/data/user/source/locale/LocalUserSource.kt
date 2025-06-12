@@ -117,7 +117,7 @@ class LocalUserSource(val context: Context) {
         context.dataStore.edit { preferences ->
             val existing = preferences[LEARNED_WORDS]?.split(",")?.toMutableSet() ?: mutableSetOf()
             existing.addAll(words)
-            preferences[LEARNED_WORDS] = words.joinToString(",")
+            preferences[LEARNED_WORDS] = existing.joinToString(",")
         }
     }
 
@@ -140,8 +140,7 @@ class LocalUserSource(val context: Context) {
                     currentWords = it[ACTIVE_WORDS]?.split(",") ?: emptyList(),
                     learnedWords = it[LEARNED_WORDS]?.split(",") ?: emptyList(),
                     quizzedWords = it[QUIZZED_WORDS]?.split(",") ?: emptyList(),
-                    learnedWordsIndex = it[LEARNED_WORDS_INDEXES]?.split(",")
-                        ?.mapNotNull { str -> str.toIntOrNull() } ?: emptyList(),
+                    learnedWordsIndex = it[LEARNED_WORDS_INDEXES]?.split(",") ?: emptyList(),
                 ),
                 preference = UserPreference(
                     dailyWordQuota = it[DAILY_WORDS_QUOTA_COUNT] ?: 0,

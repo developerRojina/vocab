@@ -21,9 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Vocable"
 include(":app")
-
 include(":data")
-include(":notification")
 include(":utils")
-include(":core")
 include(":sync")

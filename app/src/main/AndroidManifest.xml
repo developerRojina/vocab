@@ -4,7 +4,9 @@
 
     <uses-permission android:name="android.permission.USE_CREDENTIAL_MANAGER" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
     <application
@@ -16,6 +18,7 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Vocable"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         tools:targetApi="31">
 

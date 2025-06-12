@@ -42,21 +42,6 @@ class QuizRepositoryImpl : QuizRepository {
                 quizzes.add(quiz)
             }
         }
-
-
-        val randomWords = words.shuffled().take(4)
-        val correctWord = words[0].word
-        val correctMeaning = words[0].meaning
-
-        val meaning = Quiz(
-            id = UUID.randomUUID().toString(),
-            question = "Select correct meaning of the word $correctWord",
-            answers =arrayListOf(),
-            quizType = QuizType.CHOICE,
-            correctAnswer = ""
-        )
-        quizzes.add(meaning)
-
         return quizzes
 
     }

@@ -2,18 +2,22 @@ package com.vocable.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.notification.domain.model.NotificationType
-import com.notification.domain.repository.NotificationRepository
 import com.vocable.data.result.onError
 import com.vocable.data.result.onSuccess
 import com.vocable.data.user.domain.repository.UserRepository
+import com.vocable.data.word.domain.repository.WordsRepository
+import com.vocable.notification.domain.model.NotificationType
+import com.vocable.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class SettingsViewModel(
     val userRepository: UserRepository,
-    val notificationRepository: NotificationRepository
+    val notificationRepository: NotificationRepository,
+    val wordsRepository: WordsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<SettingsUiState>(SettingsUiState(isLoading = true))
@@ -35,6 +39,14 @@ class SettingsViewModel(
 
     fun clearTimePickerType() {
         _state.value = _state.value.copy(timePicker = null)
+    }
+
+    fun showDialog(dialogType: DialogType) {
+        _state.value = _state.value.copy(dialogType = dialogType)
+    }
+
+    fun clearDialog() {
+        _state.value = _state.value.copy(dialogType = null)
     }
 
     fun updateNotificationTime(time: Long) {
@@ -121,8 +133,26 @@ class SettingsViewModel(
 
     fun updateWordsQuota(quota: Int) {
         viewModelScope.launch {
+            val detail = userRepository.getMyDetail().first()
+            val oldQuota = detail?.preference?.dailyWordQuota ?: 0
+            Timber.d("the old quota is $oldQuota")
+            Timber.d("the new quota is $quota")
+
             userRepository.updateDailyWordQuota(quota)
-                .onSuccess { _state.value = _state.value.copy(isLoading = false) }
+                .onSuccess {
+                    if (quota > oldQuota) {
+                        val words = wordsRepository.getWordsOfTheDay(quota - oldQuota).first()
+                        val updatedWords: List<String> = words + detail!!.vocabStats.currentWords
+                        wordsRepository.updateWordStatusToAssigned(words)
+                        userRepository.updateCurrentWords(updatedWords)
+                    } else {
+                        val words = detail?.vocabStats?.currentWords?.shuffled() ?: emptyList()
+                        wordsRepository.updateWordStatusToAvailable(words[0])
+                        userRepository.updateCurrentWords(words.drop(1))
+
+                    }
+                    _state.value = _state.value.copy(isLoading = false)
+                }
                 .onError { _state.value = _state.value.copy(isLoading = false) }
         }
     }

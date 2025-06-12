@@ -33,9 +33,11 @@ class WordsRepositoryImpl(
                 val wordsCountInDb = words.size
                 Log.d("TAG", "the words count in db is $wordsCountInDb")
 
+                val learnedWords =
+                    wordsDao.getWordsByStatus(WordStatus.Learned).map { it.map { it.index } }
+                        .first()
                 if (wordsCountInDb < wordsCount) {
-                    downloadWords(wordsCount, emptyList())
-                    return@map emptyList<String>()
+                    downloadWords(wordsCount, learnedWords)
                 }
                 val randomIndexes =
                     (0 until wordsCountInDb).shuffled().take(min(wordsCount, wordsCountInDb))
@@ -46,26 +48,32 @@ class WordsRepositoryImpl(
             }
     }
 
-
-    override suspend fun downloadWords(wordsCount: Int, words: List<String>) {
+    override suspend fun downloadExistingWords(
+        wordStatus: WordStatus,
+        words: List<String>
+    ) {
         if (words.isNotEmpty()) {
             words.forEach { id ->
                 val word = getWordDetail(id)
                 if (word == null) {
                     firebaseDataSource.downloadWordFromId(id)?.toWordEntity()?.let {
-                        wordsDao.saveSeedWord(it)
+                        wordsDao.saveSeedWord(it.copy(wordStatus = wordStatus))
                     }
                 }
             }
         }
+    }
 
+
+    override suspend fun downloadWords(wordsCount: Int, learnedWordsIndex: List<String>) {
         val wordsCountInDb = wordsDao.getAvailableWordsCount(WordStatus.Available).first()
         if (wordsCountInDb < wordsCount) {
             val dbcount = firebaseDataSource.getWordsDbCount()
             val indexes = arrayListOf<String>()
             if (dbcount > WORDS_COUNT_IN_DD) {
                 val randomIndexes =
-                    (0 until dbcount).shuffled().take(WORDS_COUNT_IN_DD).map { "index$it" }
+                    (0 until dbcount).filterNot { "index$it" in learnedWordsIndex }.shuffled()
+                        .take(WORDS_COUNT_IN_DD).map { "index$it" }
                 indexes.addAll(randomIndexes)
             } else {
                 indexes.addAll((0 until dbcount).map { "index$it" })
@@ -85,6 +93,10 @@ class WordsRepositoryImpl(
         }
     }
 
+    override suspend fun updateWordStatusToAvailable(word: String) {
+        wordsDao.updateWOrdStatus(word, WordStatus.Available)
+    }
+
     override suspend fun updateWordStatusToLearned(words: List<String>) {
         words.map {
             wordsDao.updateWOrdStatus(it, WordStatus.Learned)
@@ -92,13 +104,7 @@ class WordsRepositoryImpl(
     }
 
     override suspend fun writeWordsInDb() {
-
-        /*   val inputStream = context.assets.open("words_db.json")
-           val reader = InputStreamReader(inputStream)
-           val jsonData = Json.decodeFromString<List<WordEntityFirebase>>(reader.readText())*/
-
         val words = getWords()
-
         coroutineScope {
             words.forEachIndexed { index, word ->
                 try {

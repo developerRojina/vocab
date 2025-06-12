@@ -1,14 +1,17 @@
 package com.vocable.quiz
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -22,13 +25,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.VerticalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.vocable.data.quiz.domain.model.Quiz
 import com.vocable.data.quiz.domain.model.QuizType
+import com.vocable.ui.theme.TealPrimary
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -42,21 +48,30 @@ fun QuizScreen() {
     // Select correct Spelling (1-3)
     //
     val pagerState = rememberPagerState()
+    val coroutineScope = rememberCoroutineScope()
 
     VerticalPager(
         count = state.quizzes.size, state = pagerState,
         modifier = Modifier.fillMaxSize(),
         userScrollEnabled = false
     ) { page ->
-        val quiz = state.quizzes.get(page)
-        QuizView(quiz)
+        val quiz = state.quizzes[page]
+        QuizView(quiz) {
+            coroutineScope.launch {
+                var hasNextPage = page + 1 < state.quizzes.size
+                if (hasNextPage)
+                    pagerState.animateScrollToPage(page + 1)
+                else {
+                    Timber.d("quiz finished")
+                }
+            }
+        }
     }
-
 }
 
 
 @Composable
-fun QuizView(quiz: Quiz) {
+fun QuizView(quiz: Quiz, goToNextQuestion: () -> Unit) {
 
     val coroutineScope = rememberCoroutineScope()
     var progress by remember { mutableStateOf(0f) }
@@ -66,31 +81,39 @@ fun QuizView(quiz: Quiz) {
         val startTime = withFrameNanos { it }
         while (progress < 1f) {
             val currentTime = withFrameNanos { it }
-            progress = ((currentTime - startTime) / 3000.toFloat() / 1_000_000f).coerceIn(0f, 1f)
+            progress = ((currentTime - startTime) / 10000.toFloat() / 1_000_000f).coerceIn(0f, 1f)
+        }
+
+        if (progress == 1f) {
+            goToNextQuestion()
         }
     }
 
     // Animate the progress change
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = tween(durationMillis = 300),
         label = "fillProgress"
     )
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray) // base
+            .fillMaxSize() // base
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(fraction = animatedProgress)
                 .align(Alignment.BottomStart) // so it fills from bottom
-                .background(Color.Green) // animated fill
+                .background(TealPrimary.copy(alpha = 0.2f)) // animated fill
         )
     }
-    Column {
+    Column(
+        Modifier
+            .padding(vertical = 16.dp, horizontal = 24.dp)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.Start
+    ) {
         when (quiz.quizType) {
             QuizType.USER_INPUT -> QuizScreenUserType(quiz)
             QuizType.CHOICE -> QuizScreenChoice(quiz)
@@ -102,15 +125,16 @@ fun QuizView(quiz: Quiz) {
 
 @Composable
 fun ColumnScope.QuizScreenUserType(quiz: Quiz) {
-    Text(text = quiz.question)
-    quiz.answers.map {
-        TextField(value = "", onValueChange = {})
+    Text(text = quiz.question, style = MaterialTheme.typography.titleMedium)
+    LazyColumn {
+        items(quiz.answers.size) { index ->
+            val answer = quiz.answers[index]
+            TextField(value = "", onValueChange = {}, modifier = Modifier.fillMaxSize())
+        }
     }
-
-
 }
 
 @Composable
 fun ColumnScope.QuizScreenChoice(quiz: Quiz) {
-    Text(text = quiz.question)
+    Text(text = quiz.question, style = MaterialTheme.typography.titleMedium)
 }

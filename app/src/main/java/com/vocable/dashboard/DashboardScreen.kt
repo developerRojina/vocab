@@ -15,10 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.vocable.BottomNavItem
 import com.vocable.Screen
@@ -27,6 +29,7 @@ import com.vocable.profile.ProfileScreen
 import com.vocable.quiz.QuizScreen
 import com.vocable.settings.SettingsScreen
 import com.vocable.ui.theme.VocableTheme
+import com.vocable.word.WordDetailScreen
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -38,28 +41,45 @@ fun DashboardScreen() {
         // bottomBar = { BottomNavBar(navController) }
 
     ) { contentPadding ->
+
         NavHost(
             navController = navController,
             modifier = Modifier.padding(contentPadding),
             startDestination = Screen.Home.route
         ) {
             composable(Screen.Home.route) {
-                HomeScreen {
+                HomeScreen({
                     navController.navigate(Screen.Profile.route)
-                }
+
+                }, onSettingsPressed = { navController.navigate(Screen.Settings.route) })
             }
             composable(Screen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen {
+                    navController.popBackStack()
+                }
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(onNavigateToQuiz = {
                     navController.navigate(Screen.Quiz.route)
                 }, onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
+                }, onNavigateToWordDetail = { wordId ->
+                    navController.navigate(Screen.WordDetail.createRoute(wordId))
+                }, onNavigateUp = {
+                    navController.popBackStack()
                 })
             }
             composable(Screen.Quiz.route) {
                 QuizScreen()
+            }
+            composable(
+                route = Screen.WordDetail.route,
+                arguments = listOf(navArgument("wordId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val wordId = backStackEntry.arguments?.getString("wordId") ?: ""
+                WordDetailScreen(wordId) {
+                    navController.popBackStack()
+                }
             }
         }
     }

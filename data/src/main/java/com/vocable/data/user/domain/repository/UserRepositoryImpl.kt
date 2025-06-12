@@ -79,7 +79,10 @@ class UserRepositoryImpl(
             )
         }
 
-    override suspend fun updateQuizzedWords(words: List<String>): AppResult<Unit> =
+    override suspend fun updateQuizzedWords(
+        words: List<String>,
+
+        ): AppResult<Unit> =
         withUserDetail { detail ->
             safeCall(
                 remote = { firebaseUserSource.updateQuizzedWords(detail.id, words) },
@@ -87,10 +90,13 @@ class UserRepositoryImpl(
             )
         }
 
-    override suspend fun updateLearnedWords(words: List<String>): AppResult<Unit> =
+    override suspend fun updateLearnedWords(
+        words: List<String>,
+        wordIndexes: List<String>
+    ): AppResult<Unit> =
         withUserDetail { detail ->
             safeCall(
-                remote = { firebaseUserSource.updateLearnedWords(detail.id, words) },
+                remote = { firebaseUserSource.updateLearnedWords(detail.id, words,wordIndexes) },
                 local = { localUserSource.updateLearnedWords(words) }
             )
         }

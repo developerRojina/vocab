@@ -1,9 +1,9 @@
 package com.vocable
 
 import android.app.Application
-import com.notification.notificationModules
 import com.vocable.data.di.dataModules
 import com.vocable.di.appModules
+import com.vocable.notification.notificationModules
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber

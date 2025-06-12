@@ -19,7 +19,7 @@ interface UserRepository {
 
     suspend fun updateCurrentWords(words: List<String>): AppResult<Unit>
     suspend fun updateQuizzedWords(words: List<String>): AppResult<Unit>
-    suspend fun updateLearnedWords(words: List<String>): AppResult<Unit>
+    suspend fun updateLearnedWords(wordIds: List<String>,wordIndexes: List<String>): AppResult<Unit>
 
     suspend fun getUserDetail(id: String): AppUserDetail?
 

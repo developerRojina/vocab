@@ -70,4 +70,13 @@ object TimeAndDateUtils {
         sdf.timeZone = TimeZone.getDefault() // Convert to user's local time zone
         return sdf.format(Date(utcMillis))
     }
+
+    fun formatTimeForClockDesign(rawTime: String): Triple<String, String, String> {
+        // Example input: "11:10 AM"
+        val parts = rawTime.trim().split(" ", ":")
+        val hour = parts.getOrNull(0) ?: "--"
+        val minute = parts.getOrNull(1) ?: "--"
+        val amPm = parts.getOrNull(2)?.uppercase() ?: "--"
+        return Triple(hour, minute, amPm)
+    }
 }

@@ -17,8 +17,7 @@ import com.vocable.ui.theme.Yellow
 
 data class HomeUIState(
     val detail: AppUserDetail? = null,
-    val words: List<Word> = emptyList(),
-    val selectedPageData: SelectedPageData? = null,
+    val pages: List<PageData> = emptyList(),
     val currentPage: Int = 0,
 )
 
@@ -29,13 +28,11 @@ enum class FlashCardType(val color: Color) {
     EQUIVALENTS(Brown), FORMS(Green), RELATED_WORDS(Pink), RHYMES(Gray)
 }
 
-data class SelectedPageData(
+data class PageData(
     val availableFlashCars: List<FlashCardType> = emptyList<FlashCardType>(),
     val flashCardTypeWithCardIndex: Pair<FlashCardType, Int>,
     val flashCardItems: List<Any>,
-    val word: Word,
-
-    )
+    val word: Word,)
 
 data class FlashCardInfo(
     val data: String,
