@@ -3,16 +3,18 @@ package com.vocable.notification.domain.repository
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.utils.TimeAndDateUtils
+import com.vocable.R
 import com.vocable.notification.Constants.CHANNEL_ID_NEW_WORDS
 import com.vocable.notification.Constants.CHANNEL_ID_QUIZ
 import com.vocable.notification.Constants.CHANNEL_ID_WORDS_REMINDER
 import com.vocable.notification.NotificationChannelManager
+import com.vocable.notification.domain.model.NotificationContent
 import com.vocable.notification.domain.model.NotificationItem
 import com.vocable.notification.domain.model.NotificationType
 import com.vocable.notification.scheduler.LocalNotificationScheduler
+import timber.log.Timber
 
 class NotificationRepositoryImpl(
     val context: Context,
@@ -67,36 +69,44 @@ class NotificationRepositoryImpl(
 
 
     override fun showNotification(
-        notificationType: NotificationType,
-        notificationId: Int,
-        contentIntent: Intent
+        notificationContent: NotificationContent
     ) {
+        Timber.d("inside show notification of NotificationRepositoryImpl");
         val pendingIntent = PendingIntent.getActivity(
             context,
-            notificationId, // Use the same request code here for consistency
-            contentIntent,
+            notificationContent.notificationId, // Use the same request code here for consistency
+            notificationContent.contentIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val notificationType = notificationContent.notificationType
         // Build the notification based on notification type
         val builder =
             NotificationCompat.Builder(context, getNotificationChannelId(notificationType))
                 .setSmallIcon(getNotificationIcon(notificationType))
-                .setContentTitle(getNotificationTitle(notificationType))
-                .setContentText(getNotificationMessage(notificationType))
+                .setContentTitle(
+                    notificationContent.notificationTitle ?: getNotificationTitle(
+                        notificationType
+                    )
+                )
+                .setContentText(
+                    notificationContent.notificationContent ?: getNotificationMessage(
+                        notificationType
+                    )
+                )
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
 
         // Show the notification with the same ID as the request code
-        notificationManager.notify(notificationId, builder.build())
+        notificationManager.notify(notificationContent.notificationId, builder.build())
     }
 
     private fun getNotificationIcon(notificationType: NotificationType): Int {
         return when (notificationType) {
-            NotificationType.NEW_WORDS -> android.R.drawable.ic_notification_overlay
-            NotificationType.QUIZ_REMINDER -> android.R.drawable.ic_notification_overlay
-            NotificationType.WORD_REMINDER -> android.R.drawable.ic_notification_overlay
+            NotificationType.NEW_WORDS -> R.drawable.ic_logo
+            NotificationType.QUIZ_REMINDER -> R.drawable.ic_logo
+            NotificationType.WORD_REMINDER -> R.drawable.ic_logo
         }
     }
 

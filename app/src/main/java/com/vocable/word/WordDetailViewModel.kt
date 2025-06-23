@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.vocable.data.word.domain.model.Word
 import com.vocable.data.word.domain.repository.WordsRepository
 import com.vocable.home.FlashCardType
-import com.vocable.home.HomeUIState
 import com.vocable.home.PageData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +39,17 @@ class WordDetailViewModel(val wordsRepository: WordsRepository) : ViewModel() {
         }
 
     }
+
+    fun selectFlashCardType(pageData: PageData, type: FlashCardType) {
+        val items = getFlashCardItems(pageData.word, type)
+        _state.value = _state.value.copy(
+            page = pageData.copy(
+                flashCardTypeWithCardIndex = Pair(type, 0),
+                flashCardItems = items
+            )
+        )
+    }
+
 
     private fun getFlashCardItems(word: Word, type: FlashCardType): List<Any> {
         return when (type) {

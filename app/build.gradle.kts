@@ -15,8 +15,8 @@ android {
         applicationId = "com.vocable"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 7
+        versionName = "1.0.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,6 +61,9 @@ dependencies {
 
     implementation(libs.accompanist.pager)
     implementation(libs.slf4j.android)
+
+    // implementation(libs.play.services.ads)
+
 
     // Koin Android features
     implementation(libs.koin.android)

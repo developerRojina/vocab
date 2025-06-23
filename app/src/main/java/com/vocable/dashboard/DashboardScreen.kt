@@ -33,7 +33,7 @@ import com.vocable.word.WordDetailScreen
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -59,15 +59,18 @@ fun DashboardScreen() {
                 }
             }
             composable(Screen.Profile.route) {
-                ProfileScreen(onNavigateToQuiz = {
-                    navController.navigate(Screen.Quiz.route)
-                }, onNavigateToSettings = {
-                    navController.navigate(Screen.Settings.route)
-                }, onNavigateToWordDetail = { wordId ->
-                    navController.navigate(Screen.WordDetail.createRoute(wordId))
-                }, onNavigateUp = {
-                    navController.popBackStack()
-                })
+                ProfileScreen(
+                    onNavigateToQuiz = {
+                        navController.navigate(Screen.Quiz.route)
+                    },
+                    onLogoutSuccess = onLogout,
+                    onNavigateToWordDetail = { wordId ->
+                        navController.navigate(Screen.WordDetail.createRoute(wordId))
+                    },
+                    onNavigateUp = {
+                        navController.popBackStack()
+                    },
+                )
             }
             composable(Screen.Quiz.route) {
                 QuizScreen()

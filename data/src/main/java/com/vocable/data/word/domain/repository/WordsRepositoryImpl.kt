@@ -25,7 +25,7 @@ class WordsRepositoryImpl(
 ) :
     WordsRepository {
 
-    val WORDS_COUNT_IN_DD = 30
+    val WORDS_COUNT_IN_DD = 900
 
     override suspend fun getWordsOfTheDay(wordsCount: Int): Flow<List<String>> {
         return wordsDao.getWordsByStatus(WordStatus.Available)

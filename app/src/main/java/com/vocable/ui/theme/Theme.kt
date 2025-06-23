@@ -18,7 +18,7 @@ private val LightColorScheme = lightColorScheme(
     background = SurfaceLight,
     surface = SurfaceLight,
     onSurface = TextPrimaryDark,
-    onError = Color.White
+    onError = Color.Black
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -28,7 +28,7 @@ private val DarkColorScheme = darkColorScheme(
     background = SurfaceDark,
     surface = SurfaceDark,
     onSurface = TextPrimaryLight,
-    onError = Color.Black
+    onError = Color.White
 )
 
 

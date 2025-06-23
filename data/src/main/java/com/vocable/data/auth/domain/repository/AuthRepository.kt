@@ -7,4 +7,5 @@ interface AuthRepository {
 
     val getCurrentUser: AppUser?
     suspend fun login(authProvider: AuthProvider): AppUser?
+    suspend fun logout()
 }

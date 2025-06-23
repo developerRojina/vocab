@@ -19,6 +19,8 @@ data class HomeUIState(
     val detail: AppUserDetail? = null,
     val pages: List<PageData> = emptyList(),
     val currentPage: Int = 0,
+    val dialogType: DialogType? = null
+
 )
 
 enum class FlashCardType(val color: Color) {
@@ -42,4 +44,9 @@ data class FlashCardInfo(
     val yOffset: Dp,
     val dragOffset: Float
 )
+
+enum class DialogType {
+    REACHED_LAST_PAGE,
+    REACHED_TOP_PAGE
+}
 

@@ -10,16 +10,18 @@ import com.vocable.data.word.domain.repository.WordsRepository
 import com.vocable.notification.Constants.EXTRA_NOTIFICATION_TIME
 import com.vocable.notification.Constants.EXTRA_NOTIFICATION_TYPE
 import com.vocable.notification.Constants.EXTRA_REQUEST_CODE
+import com.vocable.notification.domain.model.NotificationContent
 import com.vocable.notification.domain.model.NotificationType
 import com.vocable.notification.domain.repository.NotificationRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.context.GlobalContext
+import timber.log.Timber
 
 /**
  * Receiver for handling notification alarms
@@ -41,33 +43,66 @@ class LocalNotificationReceiver() : BroadcastReceiver() {
             wordsRepository = koin.get()
 
         }
-        GlobalScope.launch(Dispatchers.IO) {
-            updateWords()
-        }
+
+        Timber.d("inside on receive of LocalNotificationReceiver")
 
         val notificationTypeName = intent.getStringExtra(EXTRA_NOTIFICATION_TYPE) ?: return
         val notificationType = try {
             NotificationType.valueOf(notificationTypeName)
         } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
             return
         }
         val id = intent.getIntExtra(EXTRA_REQUEST_CODE, 0)
         val time = intent.getLongExtra(EXTRA_NOTIFICATION_TIME, 0)
 
 
-        val contentIntent = Intent(context, MainActivity::class.java)
-        contentIntent.putExtra(EXTRA_NOTIFICATION_TYPE, notificationType.name)
+        var notificationContent: String? = null
+        var notificationTitle: String? = null
+        CoroutineScope(Dispatchers.IO).launch {
+            if (notificationType == NotificationType.NEW_WORDS) {
+                Timber.d("inside on receive of LocalNotificationReceiver for new words")
+                updateWords()
+                notificationContent = "Your new words are ready!! Read them up :) :)"
+                notificationTitle = getWords().joinToString(",")
 
-        notificationRepository.showNotification(notificationType, id, contentIntent)
+            } else if (notificationType == NotificationType.WORD_REMINDER) {
+                notificationContent = "Remember these words. They are the words for today :) :)"
+                notificationTitle = getWords().joinToString(",")
 
-        notificationRepository.scheduleNotification(
-            type = notificationType,
-            item = TimeAndDateUtils.addDayToTimestamp(time)
-        )
+            }
 
+            Timber.d("the notification content is $notificationContent")
 
+            val contentIntent = Intent(context, MainActivity::class.java)
+            contentIntent.putExtra(EXTRA_NOTIFICATION_TYPE, notificationType.name)
+            val content = NotificationContent(
+                notificationId = id,
+                contentIntent = contentIntent,
+                notificationType = notificationType,
+                notificationTitle = notificationTitle,
+                notificationContent = notificationContent
+            )
+
+            notificationRepository.showNotification(content)
+            notificationRepository.scheduleNotification(
+                type = notificationType,
+                item = TimeAndDateUtils.addDayToTimestamp(time)
+            )
+        }
     }
 
+
+    suspend fun getWords(): List<String> {
+        val user = userRepository.getMyDetail().first()
+        return user?.let {
+            val wordIds = it.vocabStats.currentWords
+            val words = wordIds.mapNotNull { wordsRepository.getWordDetail(it) }
+            words.map { it.word }
+
+        } ?: emptyList()
+
+    }
     suspend fun updateWords() {
         withContext(Dispatchers.IO) {
             val userDetail = userRepository.getMyDetail().first()

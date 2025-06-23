@@ -18,6 +18,10 @@ class FirebaseAuthSource(
         return auth.currentUser?.toAppUser()
     }
 
+    suspend fun logout(){
+        auth.signOut()
+    }
+
     suspend fun login(authProvider: AuthProvider): AppUser? {
         val result = authProvider.getCredential()
         val authResult = result?.let { handleSignIn(it) }

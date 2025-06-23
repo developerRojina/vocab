@@ -9,6 +9,7 @@ import com.vocable.notification.Constants.EXTRA_NOTIFICATION_TYPE
 import com.vocable.notification.Constants.EXTRA_REQUEST_CODE
 import com.vocable.notification.LocalNotificationReceiver
 import com.vocable.notification.domain.model.NotificationItem
+import timber.log.Timber
 
 class LocalNotificationSchedulerImpl(val context: Context) : LocalNotificationScheduler {
 
@@ -24,6 +25,7 @@ class LocalNotificationSchedulerImpl(val context: Context) : LocalNotificationSc
             putExtra(EXTRA_NOTIFICATION_TIME, time)
             putExtra(EXTRA_REQUEST_CODE, notificationItem.id)
         }
+        Timber.d("inside the time is $time")
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             time,

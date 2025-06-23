@@ -12,8 +12,8 @@
     <string name="error_daily_word_count_less_title">Less than One</string>
     <string name="error_daily_word_count_less_body">You can\'t set it to be less than One</string>
 
-    <string name="error_daily_word_count_more_title">More than Five</string>
-    <string name="error_daily_word_count_more_body">You can\'t set it to be more than Five</string>
+    <string name="error_daily_word_count_more_title">More than Six</string>
+    <string name="error_daily_word_count_more_body">You can\'t set it to be more than Six</string>
 
     <string name="info_new_words_reminder_title">New Words Reminder Time</string>
     <string name="info_new_words_reminder_body">Set the time to receive daily word notifications.</string>

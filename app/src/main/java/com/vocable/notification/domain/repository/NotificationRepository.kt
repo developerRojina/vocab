@@ -1,6 +1,7 @@
 package com.vocable.notification.domain.repository
 
 import android.content.Intent
+import com.vocable.notification.domain.model.NotificationContent
 import com.vocable.notification.domain.model.NotificationType
 
 interface NotificationRepository {
@@ -13,8 +14,6 @@ interface NotificationRepository {
     fun cancelNotification(id: Int)
 
     fun showNotification(
-        notificationType: NotificationType,
-        notificationId: Int,
-        contentIntent: Intent
+       notificationContent: NotificationContent
     )
 }

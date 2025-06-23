@@ -70,11 +70,19 @@ class MainActivity : ComponentActivity() {
                     startDestination = startDestination
                 ) {
                     composable(Screen.Dashboard.route) {
-                        DashboardScreen()
+                        DashboardScreen {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
                     }
                     composable(Screen.Login.route) {
                         LoginScreen {
-                            navController.navigate(Screen.Dashboard.route)
+                            navController.navigate(Screen.Dashboard.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
                     }
 

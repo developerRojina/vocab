@@ -59,10 +59,25 @@ object TimeAndDateUtils {
 
     fun addDayToTimestamp(originalTimestamp: Long): Long {
         val zoneId = ZoneId.systemDefault()
-        val instant = Instant.ofEpochMilli(originalTimestamp)
-        val zonedDateTime = instant.atZone(zoneId)
-        val updatedZonedDateTime = zonedDateTime.plusDays(1)
-        return updatedZonedDateTime.toInstant().toEpochMilli()
+
+        val originalTime = Instant.ofEpochMilli(originalTimestamp)
+            .atZone(zoneId)
+            .toLocalTime()
+
+        val todayWithTime = LocalDate.now(zoneId).atTime(originalTime)
+        val now = ZonedDateTime.now(zoneId)
+
+        val finalZonedDateTime = if (todayWithTime.isAfter(now.toLocalDateTime())) {
+            todayWithTime.atZone(zoneId)
+        } else {
+            // Otherwise, schedule it for tomorrow
+            LocalDate.now(zoneId)
+                .plusDays(1)
+                .atTime(originalTime)
+                .atZone(zoneId)
+        }
+
+        return finalZonedDateTime.toInstant().toEpochMilli()
     }
 
     fun convertUtcToLocalTime(utcMillis: Long): String {

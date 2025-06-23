@@ -97,17 +97,14 @@ class LoginViewModel(
     }
 
     private fun scheduleAllNotifications(preference: UserPreference) {
-        notificationRepository.scheduleNotifications(
-            preference.quizNotificationTimes,
-            NotificationType.QUIZ_REMINDER
-        )
+
         notificationRepository.scheduleNotifications(
             preference.wordsReminder,
             NotificationType.WORD_REMINDER
         )
         notificationRepository.scheduleNotification(
             preference.newWordsNotificationTime,
-            NotificationType.WORD_REMINDER
+            NotificationType.NEW_WORDS
         )
     }
 

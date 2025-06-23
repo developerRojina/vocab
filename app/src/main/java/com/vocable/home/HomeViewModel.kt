@@ -59,6 +59,18 @@ class HomeViewModel(wordsRepository: WordsRepository, userRepository: UserReposi
         }
     }
 
+    fun showDialog(type: DialogType) {
+        _state.value = _state.value.copy(
+            dialogType = type
+        )
+    }
+
+    fun resetDialog() {
+        _state.value = _state.value.copy(
+            dialogType = null
+        )
+    }
+
 
     fun selectFlashCardType(pageData: PageData, type: FlashCardType, activePage: Int) {
 

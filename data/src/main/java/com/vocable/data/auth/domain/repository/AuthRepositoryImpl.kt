@@ -12,4 +12,8 @@ class AuthRepositoryImpl(private val firebaseAuthSource: FirebaseAuthSource) : A
     override suspend fun login(authProvider: AuthProvider): AppUser? {
         return firebaseAuthSource.login(authProvider)
     }
+
+    override suspend fun logout() {
+        firebaseAuthSource.logout()
+    }
 }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -86,14 +86,14 @@ fun LoginScreen(navigateToDashboard: () -> Unit) {
                     size = 14,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(150.dp)
+                        .size(180.dp)
                 )
 
                 LoginFlashCard(
                     size = 14,
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .size(150.dp)
+                        .size(190.dp)
                 )
 
 
@@ -104,14 +104,9 @@ fun LoginScreen(navigateToDashboard: () -> Unit) {
                         .fillMaxHeight(0.8f)
                 ) {
 
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo),
-                        contentDescription = "My drawable image",
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(horizontal = 16.dp, vertical = 48.dp)
 
-                    )
+
+
                     /* Card(
                          modifier = Modifier
                              .fillMaxHeight(.8f)
@@ -143,14 +138,19 @@ fun LoginScreen(navigateToDashboard: () -> Unit) {
  */
 
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TealPrimary,         // Background color
+                            contentColor = Color.White           // Text (content) color
+                        ),
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(horizontal = 24.dp)
                             .fillMaxWidth(),
 
-
                         onClick = {
-                            viewmodel.login(authProvider)
+                            if (loginState is LoginUiState.Initial || loginState is LoginUiState.Error) {
+                                viewmodel.login(authProvider)
+                            }
                         }) {
                         if (loginState is LoginUiState.Loading) {
                             CircularProgressIndicator(color = Color.White)
@@ -162,9 +162,7 @@ fun LoginScreen(navigateToDashboard: () -> Unit) {
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                             Text("Login/Register", style = MaterialTheme.typography.bodyMedium)
-
                         }
-
                     }
 
 
@@ -228,13 +226,28 @@ fun LoginFlashCard(size: Int, modifier: Modifier) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-
                     .offset(x = xOffset, y = xOffset)
-
                     .clip(RoundedCornerShape(32.dp))
                     .background(color)
                 //.zIndex(-index.toFloat())
-            ) {}
+            ) {
+                if (index == 0)
+                    Row(Modifier.align(Alignment.Center)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "My drawable image",
+                            modifier = Modifier
+                                .size(50.dp)
+
+                        )
+                        Text(
+                            "ocable",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.Bottom),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+            }
         }
     }
 

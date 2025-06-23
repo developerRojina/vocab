@@ -15,7 +15,7 @@ val appModules = module {
     viewModel { HomeViewModel(get(), get()) }
     viewModel { DashboardViewModel(get(), get()) }
     viewModel { MainViewModel(get(), get(), get()) }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { LoginViewModel(get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { QuizViewModel(get(), get(), get()) }

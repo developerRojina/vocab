@@ -33,7 +33,7 @@ fun Map<String, Any>.toWord(): WordResponse {
             ?.mapNotNull { map ->
                 try {
                     AudioResponse(
-                        audioUrl = map["url"] as? String ?: return@mapNotNull null,
+                        audioUrl = map["audioUrl"] as? String ?: return@mapNotNull null,
                         duration = (map["duration"] as? Number)?.toLong() ?: 0
                     )
                 } catch (_: Exception) {

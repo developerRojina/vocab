@@ -7,6 +7,9 @@ import com.vocable.data.FirestoreCollections
 import com.vocable.data.word.domain.model.WordEntityFirebase
 import com.vocable.data.word.domain.model.WordResponse
 import com.vocable.data.word.mapper.toWord
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
 import kotlin.random.Random
 
@@ -34,18 +37,22 @@ class FirebaseDataSource(private val firestore: FirebaseFirestore) {
         return wordIds
     }
 
-    suspend fun downloadWordsFromIndex(indices: List<String>): List<WordResponse> {
-        val words = arrayListOf<WordResponse>()
-        val reference = firestore.collection(FirestoreCollections.words)
-            .whereIn("index", indices.toList())
-            .get().await()
+    suspend fun downloadWordsFromIndex(indices: List<String>): List<WordResponse> = coroutineScope {
+        val allDocuments = indices
+            .chunked(30)
+            .map { chunk ->
+                async {
+                    firestore.collection(FirestoreCollections.words)
+                        .whereIn("index", chunk)
+                        .get()
+                        .await()
+                        .documents
+                }
+            }
+            .awaitAll()
+            .flatten()
 
-        reference.documents.map { response ->
-            val data = response.data?.toWord()
-            data?.let { data -> words.add(data) }
-
-        }
-        return words
+        allDocuments.mapNotNull { it.data?.toWord() }
     }
 
     suspend fun downloadWordFromId(id: String): WordResponse? {

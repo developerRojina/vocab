@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -37,7 +39,9 @@ fun WordDetailScreen(wordId: String, onNavigateUp: () -> Unit) {
                 modifier = Modifier.padding(start = 16.dp),
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = {
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.onError),
+                        onClick = {
                         onNavigateUp()
                     }) {
                         Icon(
@@ -55,8 +59,10 @@ fun WordDetailScreen(wordId: String, onNavigateUp: () -> Unit) {
                 .fillMaxSize()
                 .padding(24.dp)
         ) {
-            state.page?.let {
-                WordInfo(pageData = it) {}
+            state.page?.let { page ->
+                WordInfo(pageData = page) {
+                    viewmodel.selectFlashCardType(page, it)
+                }
             }
         }
     }

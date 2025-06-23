@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -41,6 +43,7 @@ import com.utils.TimeAndDateUtils
 import com.utils.TimeAndDateUtils.formatTimeForClockDesign
 import com.vocable.R
 import com.vocable.home.randomColor
+import com.vocable.ui.theme.TealPrimary
 import com.vocable.util.VocabDialog
 import com.vocable.util.VocableTimePicker
 import org.koin.androidx.compose.koinViewModel
@@ -90,13 +93,16 @@ fun SettingsScreen(onNavigateUp: () -> Unit) {
         VocabDialog(title, description) { viewmodel.clearDialog() }
     }
 
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
     ) {
 
         Row(
+
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,14 +116,13 @@ fun SettingsScreen(onNavigateUp: () -> Unit) {
                     contentDescription = "Back"
                 )
             }
-            Text("Time Settings", style = MaterialTheme.typography.bodyMedium)
+            Text("Settings", style = MaterialTheme.typography.bodyMedium)
         }
 
 
             state.userDetail?.preference?.let { preference ->
 
                 state.userDetail?.preference?.dailyWordQuota?.let { quota ->
-
 
                     Row(modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)) {
                         val isDarkTheme = isSystemInDarkTheme()
@@ -204,7 +209,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit) {
                             }
                         }
                     }
-                    HorizontalDivider()
+                    HorizontalDivider(color = TealPrimary)
                     Row(modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)) {
                         val isDarkTheme = isSystemInDarkTheme()
                         val color = randomColor(isDarkTheme)
@@ -236,7 +241,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit) {
                         }
                     }
                 }
-                HorizontalDivider()
+                HorizontalDivider(color = TealPrimary)
                 TimeSettings(
                     text = stringResource(R.string.words_reminder_notification_time),
                     times = (preference.wordsReminder),

@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -26,29 +28,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.VerticalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.vocable.R
 import com.vocable.ui.theme.SurfaceLight
 import com.vocable.ui.theme.TealPrimary
-import kotlinx.coroutines.delay
+import com.vocable.util.VocabDialog
 import org.koin.androidx.compose.koinViewModel
 import kotlin.random.Random
 
@@ -60,52 +55,86 @@ fun HomeScreen(onProfilePressed: () -> Unit, onSettingsPressed: () -> Unit) {
     val state by viewmodel.state.collectAsState()
     val pagerState = rememberPagerState()
     val words = state.pages
-    var showContent by remember { mutableStateOf(false) }
 
-    LaunchedEffect(pagerState.isScrollInProgress) {
-        if (!pagerState.isScrollInProgress) {
-            delay(800)
-            if (!pagerState.isScrollInProgress) {
-                showContent = true
-            }
-        } else {
-            showContent = false
-        }
-    }
+
 
     if (words.isNotEmpty()) {
 
+        when (state.dialogType) {
+            DialogType.REACHED_LAST_PAGE -> {
+                VocabDialog(
+                    "Reached Last Page",
+                    "You have reached the end of the Page"
+                ) { viewmodel.resetDialog() }
+            }
+
+            DialogType.REACHED_TOP_PAGE -> {
+                VocabDialog(
+                    "You are already on Top",
+                    "You are already on Top! Can't go anywhere top from here :D"
+                ) { viewmodel.resetDialog() }
+            }
+
+            null -> {}
+        }
+
+
         Box(modifier = Modifier.fillMaxSize()) {
-            VerticalPager(
-                count = words.size,
-                state = pagerState,
-                contentPadding = PaddingValues(vertical = 52.dp),
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                val selectedPageData = words[page]
-                key(selectedPageData.word.id) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
 
-                        WordInfo(
-                            pageData = words[page],
-                            onTypeSelected = { type ->
-                                viewmodel.selectFlashCardType(
-                                    selectedPageData,
-                                    type,
-                                    pagerState.currentPage
-                                )
-                            })
+            Row(modifier = Modifier.fillMaxSize()) {
 
+                Column(
+
+                    Modifier
+                        .wrapContentHeight()
+                        .fillMaxHeight()
+                        .align(Alignment.CenterVertically)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    repeat(pagerState.pageCount) { iteration ->
+                        val color =
+                            if (pagerState.currentPage == iteration) TealPrimary else Color.LightGray
+                        Box(
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(color)
+                                .height(16.dp)
+                                .width(4.dp)
+                        )
+                    }
+                }
+
+                VerticalPager(
+                    count = words.size,
+                    state = pagerState,
+                    contentPadding = PaddingValues(vertical = 52.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    val selectedPageData = words[page]
+                    key(selectedPageData.word.id) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+
+                            WordInfo(
+                                pageData = words[page],
+                                onTypeSelected = { type ->
+                                    viewmodel.selectFlashCardType(
+                                        selectedPageData,
+                                        type,
+                                        pagerState.currentPage
+                                    )
+                                })
+
+                        }
                     }
                 }
             }
-
-
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 24.dp, vertical = 48.dp)
@@ -151,19 +180,6 @@ fun WordInfo(pageData: PageData, onTypeSelected: (FlashCardType) -> Unit) {
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.titleLarge
             )
-
-            if (word.audio?.isNotEmpty() == true) {
-                IconButton(
-                    onClick = {},
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_audio),
-                        contentDescription = null,
-                        modifier = Modifier.size(52.dp),
-                        //tint = TealPrimaryVariant.copy(alpha = .6f)
-                    )
-                }
-            }
 
         }
 

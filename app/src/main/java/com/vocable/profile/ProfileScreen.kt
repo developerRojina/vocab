@@ -28,16 +28,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.vocable.R
 import com.vocable.WordCard
 import com.vocable.data.word.domain.model.Word
 import com.vocable.ui.theme.Gray
-import com.vocable.ui.theme.SurfaceDark
 import com.vocable.ui.theme.SurfaceLight
 import com.vocable.ui.theme.TealPrimary
 import kotlinx.coroutines.launch
@@ -46,7 +47,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ProfileScreen(
-    onNavigateToSettings: () -> Unit,
+    onLogoutSuccess: () -> Unit,
     onNavigateToQuiz: () -> Unit,
     onNavigateToWordDetail: (wordId: String) -> Unit,
     onNavigateUp: () -> Unit
@@ -56,14 +57,16 @@ fun ProfileScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
-    ) {
+            .padding(16.dp),
+
+
+        ) {
         state.let { detail ->
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp)
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
 
 
@@ -82,6 +85,17 @@ fun ProfileScreen(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                IconButton(onClick = {
+
+                    viewmodel.logout()
+                    onLogoutSuccess()
+                }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_logout),
+                        contentDescription = "Back"
+                    )
+                }
 
 
 

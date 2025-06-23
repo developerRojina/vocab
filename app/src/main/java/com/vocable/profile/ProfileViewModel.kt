@@ -2,6 +2,7 @@ package com.vocable.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vocable.data.auth.domain.repository.AuthRepository
 import com.vocable.data.user.domain.repository.UserRepository
 import com.vocable.data.word.domain.model.Word
 import com.vocable.data.word.domain.repository.WordsRepository
@@ -11,12 +12,18 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     val userRepository: UserRepository,
-    val wordRepository: WordsRepository
+    val wordRepository: WordsRepository,
+    val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ProfileUIState>(ProfileUIState())
     val state: StateFlow<ProfileUIState> get() = _state
 
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+        }
+    }
 
     init {
         viewModelScope.launch {
